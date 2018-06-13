@@ -21,6 +21,7 @@ command_exists() {
 
 # somewhere timeout dose not exist
 if [[ `command_exists timeout` -eq 0 ]]; then
+  echo "Timeout function was not found and will be created!"
   timeout() {
     perl -e "alarm shift; exec @ARGV" "$@";
   }
@@ -52,6 +53,8 @@ build_and_push_docker_container() {
 
 kubectl_apply_if_file() {
   if [ -e $1 ]; then
+    # try to replace some global stuff in file
+    sed -i -e "s/{{image}}/gcr.io\/$GCLOUD_PROJECT\/$GCLOUD_REPOSITORY:$BITBUCKET_BUILD_NUMBER/g" $1
     kubectl apply -f $1
   else
     echo "kubectl file $1 was skipped because is it not found"
@@ -61,8 +64,11 @@ kubectl_apply_if_file() {
 # this function takes one argument which is the cluster name
 kubectl_deploy() {
   gcloud container clusters get-credentials $1 --zone ${GCLOUD_ZONE} --project ${GCLOUD_PROJECT}
-  # replace {{image}} tag in deployment
-  sed -i -e "s/{{image}}/gcr.io\/$GCLOUD_PROJECT\/$GCLOUD_REPOSITORY:$BITBUCKET_BUILD_NUMBER/g" deployment.yaml
   kubectl_apply_if_file deployment.yaml
   kubectl_apply_if_file service.yaml
+}
+
+testas() {
+  sleep 5
+  echo "yess"
 }
