@@ -36,6 +36,7 @@ if [[ `command_exists timeout` -eq 0 ]]; then
 fi
 
 install_gcloud_sdk() {
+  set -e
   echo "Installing google SDK version ${GCLOUD_SDK_VERSION}"
   GCLOUD_SDK_FILENAME="google-cloud-sdk-${GCLOUD_SDK_VERSION}-linux-x86_64.tar.gz"
   GCLOUD_SDK_DOWNLOAD_PATH="https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/${GCLOUD_SDK_FILENAME}"
@@ -53,7 +54,15 @@ install_gcloud_sdk() {
   gcloud config set project ${GCLOUD_PROJECT}
 }
 
+include_gcloud_sdk() {
+  set -e
+  source ${BITBUCKET_CLONE_DIR}/google-cloud-sdk/path.bash.inc
+  gcloud auth activate-service-account --key-file ${BITBUCKET_CLONE_DIR}/google-cloud-sdk/gcloud-api-key.json
+  gcloud config set project ${GCLOUD_PROJECT}
+}
+
 build_and_push_docker_container() {
+  set -e
   docker-credential-gcr configure-docker
   docker build -t gcr.io/${GCLOUD_PROJECT}/${GCLOUD_REPOSITORY}:${BITBUCKET_BUILD_NUMBER} .
   docker push gcr.io/${GCLOUD_PROJECT}/${GCLOUD_REPOSITORY}:${BITBUCKET_BUILD_NUMBER}
@@ -71,6 +80,7 @@ kubectl_apply_if_file() {
 
 # this function takes one argument which is the cluster name
 kubectl_deploy() {
+  set -e
   gcloud container clusters get-credentials $1 --zone ${GCLOUD_ZONE} --project ${GCLOUD_PROJECT}
   kubectl_apply_if_file deployment.yaml
   kubectl_apply_if_file service.yaml

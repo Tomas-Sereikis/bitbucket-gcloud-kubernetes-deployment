@@ -7,8 +7,8 @@ pipelines:
             - docker
           script:
             - curl -O https://raw.githubusercontent.com/Tomas-Sereikis/bitbucket-gcloud-kubernetes-deployment/master/runner.sh && chmod +x runner.sh
-            - . ./runner.sh; export -f install_gcloud_sdk; timeout 60s bash -c install_gcloud_sdk;
-            - . ./runner.sh; export -f build_and_push_docker_container; timeout 600s bash -c build_and_push_docker_container;
+            - . ./runner.sh; export -f install_gcloud_sdk; timeout 60s bash -c install_gcloud_sdk
+            - . ./runner.sh; export -f include_gcloud_sdk build_and_push_docker_container; timeout 600s bash -c include_gcloud_sdk; build_and_push_docker_container
       - step:
           name: Deploy to production
           trigger: manual
@@ -18,4 +18,4 @@ pipelines:
           script:
             - curl -O https://raw.githubusercontent.com/Tomas-Sereikis/bitbucket-gcloud-kubernetes-deployment/master/runner.sh && chmod +x runner.sh
             - . ./runner.sh; export -f install_gcloud_sdk; timeout 60s bash -c install_gcloud_sdk;
-            - . ./runner.sh; export -f kubectl_deploy; timeout 60s bash -c kubectl_deploy $GCLOUD_CLUSTER_PRODUCTION;
+            - . ./runner.sh; export -f include_gcloud_sdk kubectl_deploy; timeout 60s bash -c include_gcloud_sdk; kubectl_deploy $GCLOUD_CLUSTER_PRODUCTION;
