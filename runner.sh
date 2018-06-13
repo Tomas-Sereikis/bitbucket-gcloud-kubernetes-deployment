@@ -56,23 +56,22 @@ kubectl_apply_if_file() {
 
 # this function takes one argument which is the cluster name
 kubectl_deploy() {
-  set -e
   KUBE_MIGRATION_NAME="$GCLOUD_REPOSITORY-migration"
   include_gcloud_sdk
   gcloud container clusters get-credentials $1 --zone ${GCLOUD_ZONE} --project ${GCLOUD_PROJECT}
   if [ -e migration.yaml ]; then
-    JOB_STATUS_LINE=$(kubectl get job ${KUBE_MIGRATION_NAME} | awk 'NR > 1')
-    if [ ! -z ${JOB_STATUS_LINE} ]; then
-      echo "Deployment canceled due to that job ${KUBE_MIGRATION_NAME} already exists!"
+    MIGRATION_POD_STATUS_LINE=$(kubectl get pods | grep ${KUBE_MIGRATION_NAME})
+    if [ ! -z "${MIGRATION_POD_STATUS_LINE}" ]; then
+      echo "Deployment canceled due to that job pod ${KUBE_MIGRATION_NAME} already exists!"
       exit 1
     fi
+    echo "Starting migration script..."
+    kubectl_apply_if_file migration.yaml
     kubectl_run_migration ${KUBE_MIGRATION_NAME}
   fi
+  echo "Starting deployment and service updates..."
   kubectl_apply_if_file deployment.yaml
   kubectl_apply_if_file service.yaml
-  if [ -e migration.yaml ]; then
-    kubectl_delete_migration ${KUBE_MIGRATION_NAME}
-  fi
 }
 
 kubectl_job_logs() {
@@ -80,7 +79,7 @@ kubectl_job_logs() {
   POD_COUNT=$(echo ${POD_STATUS_LINE} | awk '{ print $2 }')
   POD_NAME=$(echo ${POD_STATUS_LINE} | awk '{ print $1 }')
   POD_STATUS=$(echo ${POD_STATUS_LINE} | awk '{ print $3 }')
-  if [ ${POD_COUNT} -eq "1/1" ]; then
+  if [ "${POD_COUNT}" == "1/1" ]; then
     kubectl logs ${POD_NAME} --timestamps
   else
     kubectl logs ${POD_NAME} -c $1 --timestamps
@@ -89,7 +88,7 @@ kubectl_job_logs() {
 
 kubectl_delete_migration() {
   KUBE_MIGRATION_NAME=$1
-  JOB_STATUS_LINE=$(kubectl get job ${KUBE_MIGRATION_NAME} | awk 'NR > 1')
+  JOB_STATUS_LINE=$(kubectl get pods | grep ${KUBE_MIGRATION_NAME})
   if [ -z "${JOB_STATUS_LINE}" ]; then
     echo "Can not delete job ${KUBE_MIGRATION_NAME} because it is not found"
   else
@@ -109,9 +108,10 @@ kubectl_run_migration() {
     else
       POD_NAME=$(echo ${POD_STATUS_LINE} | awk '{ print $1 }')
       POD_STATUS=$(echo ${POD_STATUS_LINE} | awk '{ print $3 }')
-      if [ ${POD_STATUS} -eq "Completed" ]; then
-        kubectl_job_logs
+      if [ "${POD_STATUS}" == "Completed" ]; then
+        kubectl_job_logs ${KUBE_MIGRATION_NAME}
         kubectl delete job ${KUBE_MIGRATION_NAME}
+        break
       else
         echo "Job ${KUBE_MIGRATION_NAME} pod ${POD_NAME} is in ${POD_STATUS} status"
       fi
