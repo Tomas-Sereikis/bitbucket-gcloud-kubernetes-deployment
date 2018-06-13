@@ -56,11 +56,12 @@ kubectl_apply_if_file() {
 
 # this function takes one argument which is the cluster name
 kubectl_deploy() {
+  set -e
   KUBE_MIGRATION_NAME="$GCLOUD_REPOSITORY-migration"
   include_gcloud_sdk
   gcloud container clusters get-credentials $1 --zone ${GCLOUD_ZONE} --project ${GCLOUD_PROJECT}
   if [ -e migration.yaml ]; then
-    MIGRATION_POD_STATUS_LINE=$(kubectl get pods | grep ${KUBE_MIGRATION_NAME})
+    MIGRATION_POD_STATUS_LINE=$(kubectl get pods | grep ${KUBE_MIGRATION_NAME} | cat)
     if [ ! -z "${MIGRATION_POD_STATUS_LINE}" ]; then
       echo "Deployment canceled due to that job pod ${KUBE_MIGRATION_NAME} already exists!"
       exit 1
@@ -75,7 +76,7 @@ kubectl_deploy() {
 }
 
 kubectl_job_logs() {
-  POD_STATUS_LINE=$(kubectl get pods | grep $1)
+  POD_STATUS_LINE=$(kubectl get pods | grep $1 | cat)
   POD_COUNT=$(echo ${POD_STATUS_LINE} | awk '{ print $2 }')
   POD_NAME=$(echo ${POD_STATUS_LINE} | awk '{ print $1 }')
   POD_STATUS=$(echo ${POD_STATUS_LINE} | awk '{ print $3 }')
@@ -88,7 +89,7 @@ kubectl_job_logs() {
 
 kubectl_delete_migration() {
   KUBE_MIGRATION_NAME=$1
-  JOB_STATUS_LINE=$(kubectl get pods | grep ${KUBE_MIGRATION_NAME})
+  JOB_STATUS_LINE=$(kubectl get pods | grep ${KUBE_MIGRATION_NAME} | cat)
   if [ -z "${JOB_STATUS_LINE}" ]; then
     echo "Can not delete job ${KUBE_MIGRATION_NAME} because it is not found"
   else
@@ -101,7 +102,7 @@ kubectl_run_migration() {
   LOOP_TIMES=600
   for i in `seq 1 ${LOOP_TIMES}`; do
     sleep 0.5
-    POD_STATUS_LINE=$(kubectl get pods | grep ${KUBE_MIGRATION_NAME})
+    POD_STATUS_LINE=$(kubectl get pods | grep ${KUBE_MIGRATION_NAME} | cat)
     if [ -z "${POD_STATUS_LINE}" ]; then
       echo "Job pod ${KUBE_MIGRATION_NAME} was not found"
       exit 1
