@@ -8,8 +8,17 @@
 # - GCLOUD_REPOSITORY is a name of repo where container will be stored
 # - GCLOUD_ZONE zone where cluster is
 
-GCLOUD_SDK_VERSION="203.0.0"
-GCLOUD_INSTALL_DIR=${BITBUCKET_CLONE_DIR}
+# export these variables to timeout can access them
+export BITBUCKET_CLONE_DIR=${BITBUCKET_CLONE_DIR}
+export BITBUCKET_BUILD_NUMBER=${BITBUCKET_BUILD_NUMBER}
+export GCLOUD_API_KEYFILE=${GCLOUD_API_KEYFILE}
+export GCLOUD_PROJECT=${GCLOUD_PROJECT}
+export GCLOUD_REPOSITORY=${GCLOUD_REPOSITORY}
+export GCLOUD_ZONE=${GCLOUD_ZONE}
+
+# local variables
+export GCLOUD_SDK_VERSION="203.0.0"
+export GCLOUD_INSTALL_DIR=${BITBUCKET_CLONE_DIR}
 
 command_exists() {
   if type "$1" &> /dev/null; then
@@ -21,7 +30,6 @@ command_exists() {
 
 # somewhere timeout dose not exist
 if [[ `command_exists timeout` -eq 0 ]]; then
-  echo "Timeout function was not found and will be created!"
   timeout() {
     perl -e "alarm shift; exec @ARGV" "$@";
   }
@@ -66,9 +74,4 @@ kubectl_deploy() {
   gcloud container clusters get-credentials $1 --zone ${GCLOUD_ZONE} --project ${GCLOUD_PROJECT}
   kubectl_apply_if_file deployment.yaml
   kubectl_apply_if_file service.yaml
-}
-
-testas() {
-  sleep 5
-  echo "yess"
 }
