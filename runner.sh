@@ -113,6 +113,11 @@ kubectl_run_migration() {
         kubectl_job_logs ${KUBE_MIGRATION_NAME}
         kubectl delete job ${KUBE_MIGRATION_NAME}
         break
+      elif [ "${POD_STATUS}" == "Error" ]; then
+        kubectl_job_logs ${KUBE_MIGRATION_NAME}
+        kubectl delete job ${KUBE_MIGRATION_NAME}
+        echo "Job finished with at error!"
+        exit 1
       else
         echo "Job ${KUBE_MIGRATION_NAME} pod ${POD_NAME} is in ${POD_STATUS} status"
       fi
