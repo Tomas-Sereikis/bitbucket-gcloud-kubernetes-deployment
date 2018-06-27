@@ -18,7 +18,7 @@ install_gcloud_sdk() {
   GCLOUD_SDK_DOWNLOAD_PATH="https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/${GCLOUD_SDK_FILENAME}"
   # download google dsk
   curl -o ${GCLOUD_INSTALL_DIR}/google-cloud-sdk.tar.gz ${GCLOUD_SDK_DOWNLOAD_PATH}
-  tar -xvf ${GCLOUD_INSTALL_DIR}/google-cloud-sdk.tar.gz -C ${GCLOUD_INSTALL_DIR}/
+  tar -xvf ${GCLOUD_INSTALL_DIR}/google-cloud-sdk.tar.gz -C ${GCLOUD_INSTALL_DIR}/ 2>&1 > /dev/null
   # install google sdk
   ${GCLOUD_INSTALL_DIR}/google-cloud-sdk/install.sh -q 2>&1 > /dev/null
   source ${GCLOUD_INSTALL_DIR}/google-cloud-sdk/path.bash.inc
