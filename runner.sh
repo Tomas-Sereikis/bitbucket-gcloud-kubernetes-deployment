@@ -20,7 +20,7 @@ install_gcloud_sdk() {
   curl -o ${GCLOUD_INSTALL_DIR}/google-cloud-sdk.tar.gz ${GCLOUD_SDK_DOWNLOAD_PATH}
   tar -xvf ${GCLOUD_INSTALL_DIR}/google-cloud-sdk.tar.gz -C ${GCLOUD_INSTALL_DIR}/
   # install google sdk
-  ${GCLOUD_INSTALL_DIR}/google-cloud-sdk/install.sh -q
+  ${GCLOUD_INSTALL_DIR}/google-cloud-sdk/install.sh -q 2>&1 > /dev/null
   source ${GCLOUD_INSTALL_DIR}/google-cloud-sdk/path.bash.inc
   gcloud components install kubectl -q
   gcloud components install docker-credential-gcr -q
