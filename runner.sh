@@ -73,6 +73,10 @@ kubectl_deploy() {
   echo "Starting deployment and service updates..."
   kubectl_apply_if_file deployment.yaml
   kubectl_apply_if_file service.yaml
+  for jobFile in $(find . -name "job-*.yaml" -maxdepth 1); do
+    echo "Found extra file for kubernetes job $jobFile"
+    kubectl_apply_if_file "$jobFile"
+  done
 }
 
 kubectl_job_logs() {
