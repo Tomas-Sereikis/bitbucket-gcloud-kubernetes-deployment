@@ -41,6 +41,7 @@ build_and_push_docker_container() {
   include_gcloud_sdk
   docker-credential-gcr configure-docker
   docker build -t gcr.io/${GCLOUD_PROJECT}/${GCLOUD_REPOSITORY}:${BITBUCKET_BUILD_NUMBER} .
+  docker tag gcr.io/${GCLOUD_PROJECT}/${GCLOUD_REPOSITORY}:${BITBUCKET_BUILD_NUMBER} gcr.io/${GCLOUD_PROJECT}/${GCLOUD_REPOSITORY}:latest
   docker push gcr.io/${GCLOUD_PROJECT}/${GCLOUD_REPOSITORY}:${BITBUCKET_BUILD_NUMBER}
 }
 
