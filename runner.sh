@@ -43,6 +43,7 @@ build_and_push_docker_container() {
   docker build -t gcr.io/${GCLOUD_PROJECT}/${GCLOUD_REPOSITORY}:${BITBUCKET_BUILD_NUMBER} .
   docker tag gcr.io/${GCLOUD_PROJECT}/${GCLOUD_REPOSITORY}:${BITBUCKET_BUILD_NUMBER} gcr.io/${GCLOUD_PROJECT}/${GCLOUD_REPOSITORY}:latest
   docker push gcr.io/${GCLOUD_PROJECT}/${GCLOUD_REPOSITORY}:${BITBUCKET_BUILD_NUMBER}
+  docker push gcr.io/${GCLOUD_PROJECT}/${GCLOUD_REPOSITORY}:latest
 }
 
 kubectl_apply_if_file() {
